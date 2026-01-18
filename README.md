@@ -1,60 +1,121 @@
-# django_ml
+# django_ml-ACA 3 – Dashboard de Visualización de Datos con Django y PostgreSQL
 
 Visualización de Datos con Python y Django
 
-Autor: José M. Llanos M.
+Docente: José M. Llanos M.
 
-Fecha: 07-julio-2025
+# Autores
+
+María Catalina Rodríguez Uricoechea
+Oscar Andres Paez Villamil
+
+Especialización en Visualización de Datos
+Enero 2026
+
+# Descripción del proyecto
+
+Este proyecto corresponde al desarrollo del ACA 3, donde se implementa un dashboard interactivo utilizando Django bajo el patrón MVT (Modelo–Vista–Template), conectado a una base de datos PostgreSQL.
+
+El dashboard permite visualizar, filtrar y analizar datos provenientes de cinco tablas relacionadas, mediante gráficos dinámicos e interactivos construidos con Chart.js y Highcharts.
+
+# Tecnologías utilizadas
+
+Python 3
+Django 5.x
+PostgreSQL
+Chart.js
+Highcharts
+HTML5 / CSS3
+Git & GitHub
+
+# Modelo de datos
+
+La base de datos fue diseñada en PostgreSQL y contiene 5 tablas relacionadas mediante llave primaria y llaves foráneas:
+
+Clientes
+Pedidos
+Productos
+Pagos
+Detalle_Pedidos
+
+Cada tabla contiene 30 registros.
+
+# Patrón arquitectónico (MVT)
+
+El proyecto sigue el patrón Modelo–Vista–Template (MVT) de Django:
+
+Modelos (models.py):
+Definen la estructura de las tablas existentes en PostgreSQL.
+
+Vistas (views.py):
+Contienen la lógica del dashboard, filtros, KPIs y consultas agregadas.
+
+Templates (index.html):
+Renderizan la información y los gráficos dinámicos.
+
+# Conexión Django – PostgreSQL
+
+La conexión se configuró en el archivo settings.py usando el motor django.db.backends.postgresql, permitiendo que Django interactúe directamente con la base de datos creada.
+
+# Visualizaciones implementadas
+Gráficos con Chart.js
+Clientes por ciudad (barras)
+Pedidos por estado (pie)
+Productos por categoría (barras)
+Pagos por método (doughnut)
+Gráfico con Highcharts
+Pagos por método (Highcharts)
+
+# Filtros dinámicos
+
+El dashboard incluye filtros que afectan automáticamente todas las visualizaciones:
+
+Filtro global por ciudad
+Filtro por categoría de producto
+Los gráficos y KPIs se actualizan automáticamente según los filtros seleccionados, sin necesidad de recargar manualmente la página.
+
+# KPIs mostrados
+
+Total de clientes
+Total de pedidos
+Suma del subtotal de pedidos
+Suma del costo de envío
+Todos los KPIs están afectados por los filtros activos.
+
+# Operaciones CRUD (Base de datos)
+
+Se realizaron operaciones directamente sobre la base de datos:
+
+Inserción de nuevos registros en distintas tablas
+Actualización de registros existentes
+Eliminación de registros
+
+Los cambios se reflejan automáticamente en el dashboard al recargar la vista, demostrando la integración completa entre Django y PostgreSQL.
+
+# Cómo ejecutar el proyecto
+
+Clonar el repositorio:
+
+git clone https://github.com/oscarap16/ACA2.git
 
 
-## Paso 1: Instalación de Django
+Ingresar al proyecto:
 
-#### Linux / macOS:
+cd ACA2
 
-python3 -m pip install Django==5.2.4
 
-#### Windows:
+Instalar dependencias:
 
-pip install Django==5.2.4
+pip install django psycopg2
 
-## Paso 2: Verificar la versión del Django
 
-python -m django --version
+Configurar la base de datos PostgreSQL en settings.py.
 
-## Paso 3: Listalar las librerias a utilizar
+Ejecutar el servidor:
 
-pip install numpy pandas matplotlib
+python manage.py runserver
 
-## Paso 4: Correr la aplicación para verificar que Django está en funcionamiento
 
-nombre_proyecto$ python manage.py runserver
+Abrir en el navegador:
 
-## Paso 5: Clone la plantilla de Django dentro de la carpeta del proyecto
-
-git clone https://github.com/jose-llanos/django_ml.git
-
-## Paso 6: Modifique el archivo views.py
-
-Aquí deben ir todos los elementos de visualización que se pretende mostrar en el dashboard en el lenguaje de programación Python.
-
-## Paso 7: Modifique el archivo index.html
-
-Este es el Dashboard, aquí se toman los datos enviados por el Python y se muestran a través de html al usuario.
-
-## Paso 8: Ejecute la aplicación en el navegador para visualizar el dashboard
-
-nombre_proyecto$ python manage.py runserver
-
-Y al final el Django genera una URL para la visualización de la aplicación
-
-## --------------------------------------------------
-
-#### Si el proyecto es nuevo, se debe ejecutar estos pasos después de instalar las librerias (Paso 3)
-
-## Paso 3.1: Crear un proyecto en Django
-
-django-admin startproject nombre_proyecto
-
-## Paso 3.2: Crear migraciones en Django
-
-python manage.py migrate
+http://127.0.0.1:8000/
