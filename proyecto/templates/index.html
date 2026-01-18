@@ -2,28 +2,19 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Dashboard - PostgreSQL (ACA2)</title>
 
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+  <!-- Highcharts -->
+  <script src="https://code.highcharts.com/highcharts.js"></script>
+
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f5f6fa;
-      margin: 0;
-      padding: 20px;
-    }
+    body { font-family: Arial, sans-serif; background: #f5f6fa; margin: 0; padding: 20px; }
+    h1 { text-align: center; margin: 10px 0 20px; }
 
-    .container {
-      max-width: 1100px;
-      margin: 0 auto;
-    }
-
-    h1 {
-      text-align: center;
-      margin: 10px 0 20px;
-    }
+    .container { max-width: 1100px; margin: 0 auto; }
 
     .card {
       background: white;
@@ -36,18 +27,18 @@
     .kpis {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 14px;
+      gap: 12px;
       margin-bottom: 18px;
     }
-
     .kpi {
       background: white;
-      padding: 14px;
+      padding: 12px;
       border-radius: 10px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
       text-align: center;
     }
-    .kpi small { display:block; color:#666; text-transform:uppercase; letter-spacing:.5px; }
+    .kpi b { display:block; font-size: 12px; color:#000000; letter-spacing: .4px; }
+    .kpi .val { font-size: 16px; margin-top: 4px; font-weight: 700; }
 
     .grid {
       display: grid;
@@ -56,106 +47,95 @@
       margin-bottom: 18px;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-      font-size: 13px;
-    }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #ddd; padding: 8px; font-size: 13px; }
+    th { background: #f0f0f0; }
 
-    th, td {
-      border: 1px solid #e1e1e1;
+    canvas { max-height: 320px; width: 100% !important; }
+
+    .filtros-row {
+      display:flex; gap:14px; align-items:flex-end; flex-wrap:wrap;
+    }
+    .filtro {
+      display:flex; flex-direction:column; gap:6px;
+      min-width: 240px;
+    }
+    label { font-size: 13px; color:#333; }
+    select {
       padding: 8px;
-    }
-
-    th {
-      background: #f1f3f6;
-      text-align: center;
-    }
-
-    canvas { width: 100% !important; height: 320px !important; }
-
-    .filters-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-      align-items: end;
-    }
-
-    label { font-size: 13px; color: #333; display:block; margin-bottom: 6px; }
-    select, button {
-      padding: 8px 10px;
       border-radius: 8px;
       border: 1px solid #d6d6d6;
-      font-size: 14px;
+      background: white;
     }
-    button {
-      cursor: pointer;
-      background: #111827;
-      color: #fff;
-      border: none;
+    .btn {
       padding: 9px 14px;
+      border-radius: 8px;
+      border: 0;
+      cursor:pointer;
+      font-weight: 700;
     }
-    a.btn-link {
-      margin-left: 10px;
-      color: #1d4ed8;
-      text-decoration: none;
-      font-weight: 600;
+    .btn-primary { background:#111827; color:white; }
+    .btn-link { background:transparent; color:#060afc; text-decoration: underline; padding: 9px 0; }
+
+    /* ✅ Tamaño controlado para Highcharts */
+    .hc-container{
+      width: 100%;
+      height: 320px;   /* ajusta aquí si lo quieres más alto */
+    }
+
+    /* Responsive */
+    @media (max-width: 900px){
+      .kpis{ grid-template-columns: 1fr 1fr; }
+      .grid{ grid-template-columns: 1fr; }
     }
   </style>
 </head>
 
 <body>
   <div class="container">
-
     <h1>Dashboard - PostgreSQL (ACA2)</h1>
 
     <!-- =========================
-         FILTRO GLOBAL (CIUDAD)
-         + FILTRO DE CATEGORIA
+         FILTRO GLOBAL (CIUDAD + CATEGORIA)
          ========================= -->
     <div class="card">
       <h3 style="margin-top:0;">Filtro global</h3>
 
-      <form method="GET">
-        <div class="filters-row">
-          <div>
-            <label for="ciudad">Filtrar por ciudad</label>
-            <select name="ciudad" id="ciudad">
-              <option value="" {% if not ciudad_seleccionada %}selected{% endif %}>Todas</option>
-              {% for c in ciudades %}
-                <option value="{{ c }}" {% if ciudad_seleccionada == c %}selected{% endif %}>{{ c }}</option>
-              {% endfor %}
-            </select>
-          </div>
-
-          <div>
-            <label for="categoria">Filtrar productos por categoría</label>
-            <select name="categoria" id="categoria">
-              <option value="" {% if not categoria_seleccionada %}selected{% endif %}>(Todas)</option>
-              {% for cat in categorias %}
-                <option value="{{ cat }}" {% if categoria_seleccionada == cat %}selected{% endif %}>{{ cat }}</option>
-              {% endfor %}
-            </select>
-          </div>
+      <form method="get" class="filtros-row">
+        <div class="filtro">
+          <label for="ciudad">Filtrar por ciudad:</label>
+          <select name="ciudad" id="ciudad">
+            <option value="">Todas</option>
+            {% for c in ciudades_disponibles %}
+              <option value="{{ c }}" {% if c == ciudad_seleccionada %}selected{% endif %}>{{ c }}</option>
+            {% endfor %}
+          </select>
         </div>
 
-        <div style="margin-top:12px;">
-          <button type="submit">Aplicar</button>
-          <a class="btn-link" href="/">Quitar filtros</a>
+        <div class="filtro">
+          <label for="categoria">Filtrar productos por categoría:</label>
+          <select name="categoria" id="categoria">
+            <option value="">(Todas)</option>
+            {% for cat in categorias_disponibles %}
+              <option value="{{ cat }}" {% if cat == categoria_seleccionada %}selected{% endif %}>{{ cat }}</option>
+            {% endfor %}
+          </select>
         </div>
+
+        <button class="btn btn-primary" type="submit">Aplicar</button>
+        <a class="btn btn-link" href="/">Quitar filtro</a>
       </form>
     </div>
 
     <!-- KPIs -->
     <div class="kpis">
-      <div class="kpi"><small>Total clientes</small><b>{{ total_clientes }}</b></div>
-      <div class="kpi"><small>Total pedidos</small><b>{{ total_pedidos }}</b></div>
-      <div class="kpi"><small>Suma subtotal</small><b>{{ suma_subtotal }}</b></div>
-      <div class="kpi"><small>Suma envío</small><b>{{ suma_envio }}</b></div>
+      <div class="kpi"><b>TOTAL CLIENTES</b><div class="val">{{ total_clientes }}</div></div>
+      <div class="kpi"><b>TOTAL PEDIDOS</b><div class="val">{{ total_pedidos }}</div></div>
+      <div class="kpi"><b>SUMA SUBTOTAL</b><div class="val">{{ suma_subtotal }}</div></div>
+      <div class="kpi"><b>SUMA ENVÍO</b><div class="val">{{ suma_envio }}</div></div>
     </div>
 
-    <!-- Gráficos -->
+    <!-- Gráficos (2 arriba) -->
     <div class="grid">
       <div class="card">
         <h3 style="margin-top:0;">Clientes por ciudad</h3>
@@ -168,9 +148,22 @@
       </div>
     </div>
 
+    <!-- Productos por categoría -->
     <div class="card">
       <h3 style="margin-top:0;">Productos por categoría</h3>
       <canvas id="productosCategoriaChart"></canvas>
+    </div>
+
+    <!-- Pagos por método (Chart.js) -->
+    <div class="card">
+      <h3 style="margin-top:0;">Pagos por método (Chart.js)</h3>
+      <canvas id="pagosMetodoChart"></canvas>
+    </div>
+
+    <!-- ✅ Pagos por método (Highcharts) -->
+    <div class="card">
+      <h3 style="margin-top:0;">Pagos por método (Highcharts)</h3>
+      <div id="pagosMetodoHighcharts" class="hc-container"></div>
     </div>
 
     <!-- Tabla clientes -->
@@ -186,7 +179,7 @@
           <td>{{ c.nombre_completo }}</td>
           <td>{{ c.correo }}</td>
           <td>{{ c.ciudad }}</td>
-          <td style="text-align:right;">{{ c.edad }}</td>
+          <td>{{ c.edad }}</td>
         </tr>
         {% endfor %}
       </table>
@@ -204,8 +197,25 @@
           <td>{{ p.cliente_id }}</td>
           <td>{{ p.fecha_pedido }}</td>
           <td>{{ p.estado }}</td>
-          <td style="text-align:right;">{{ p.subtotal }}</td>
-          <td style="text-align:right;">{{ p.costo_envio }}</td>
+          <td>{{ p.subtotal }}</td>
+          <td>{{ p.costo_envio }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+
+    <!-- Tabla pagos muestra -->
+    <div class="card">
+      <h3 style="margin-top:0;">Pagos (muestra)</h3>
+      <table>
+        <tr>
+          <th>Pago</th><th>Pedido</th><th>Método</th>
+        </tr>
+        {% for x in pagos %}
+        <tr>
+          <td>{{ x.pago_id }}</td>
+          <td>{{ x.pedido_id }}</td>
+          <td>{{ x.metodo_pago }}</td>
         </tr>
         {% endfor %}
       </table>
@@ -214,9 +224,9 @@
   </div>
 
   <script>
-    // ======================
-    // GRAFICO 1: Clientes por ciudad
-    // ======================
+    // =========================
+    // 1) Clientes por ciudad (bar)
+    // =========================
     const ciudades = [{% for c in clientes_por_ciudad %}"{{ c.ciudad }}",{% endfor %}];
     const totalesCiudad = [{% for c in clientes_por_ciudad %}{{ c.total }},{% endfor %}];
 
@@ -226,19 +236,15 @@
         labels: ciudades,
         datasets: [{
           label: "Clientes",
-          data: totalesCiudad,
-          backgroundColor: "rgba(54, 162, 235, 0.7)"
+          data: totalesCiudad
         }]
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false
-      }
+      options: { responsive: true }
     });
 
-    // ======================
-    // GRAFICO 2: Pedidos por estado
-    // ======================
+    // =========================
+    // 2) Pedidos por estado (pie)
+    // =========================
     const estados = [{% for p in pedidos_por_estado %}"{{ p.estado }}",{% endfor %}];
     const totalesEstado = [{% for p in pedidos_por_estado %}{{ p.total }},{% endfor %}];
 
@@ -247,19 +253,15 @@
       data: {
         labels: estados,
         datasets: [{
-          data: totalesEstado,
-          backgroundColor: ["#36A2EB", "#FF6384", "#FFCE56", "#4BC0C0", "#9966FF"]
+          data: totalesEstado
         }]
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false
-      }
+      options: { responsive: true }
     });
 
-    // ======================
-    // GRAFICO 3: Productos por categoría
-    // ======================
+    // =========================
+    // 3) Productos por categoría (bar)
+    // =========================
     const categorias = [{% for p in productos_por_categoria %}"{{ p.categoria }}",{% endfor %}];
     const totalesProductos = [{% for p in productos_por_categoria %}{{ p.total }},{% endfor %}];
 
@@ -269,18 +271,57 @@
         labels: categorias,
         datasets: [{
           label: "Productos por categoría",
-          data: totalesProductos,
-          backgroundColor: "rgba(76, 175, 80, 0.75)"
+          data: totalesProductos
         }]
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false
-      }
+      options: { responsive: true }
+    });
+
+    // =========================
+    // 4) Pagos por método (Chart.js - doughnut)
+    // =========================
+    const metodos = [{% for m in pagos_por_metodo %}"{{ m.metodo_pago }}",{% endfor %}];
+    const totalesMetodo = [{% for m in pagos_por_metodo %}{{ m.total }},{% endfor %}];
+
+    new Chart(document.getElementById("pagosMetodoChart"), {
+      type: "doughnut",
+      data: {
+        labels: metodos,
+        datasets: [{
+          label: "Pagos por método",
+          data: totalesMetodo
+        }]
+      },
+      options: { responsive: true }
+    });
+
+    // =========================
+    // 5) Pagos por método (Highcharts)
+    // =========================
+    const pagosSeries = [
+      {% for m in pagos_por_metodo %}
+        { name: "{{ m.metodo_pago }}", y: {{ m.total }} },
+      {% endfor %}
+    ];
+
+    Highcharts.chart("pagosMetodoHighcharts", {
+      chart: { type: "column" },
+      title: { text: "" },
+      xAxis: { type: "category", title: { text: "Método" } },
+      yAxis: { title: { text: "Cantidad de pagos" } },
+      tooltip: { pointFormat: "<b>{point.y}</b> pagos" },
+      series: [{
+        name: "Pagos",
+        data: pagosSeries
+      }],
+      credits: { enabled: false }
     });
   </script>
+
 </body>
 </html>
+
+
 
 
 
